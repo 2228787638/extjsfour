@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="../resources/css/ext-all.css" rel="stylesheet">
+    <script src="../adapter/ext/ext-base.js"></script>
+    <script src="../ext-all.js"></script>
+    <script type="text/javascript">
+        Ext.onReady(function () {
+
+            var win;
+            var panel = new Ext.Panel({
+                id: 'pan',
+                title: '',
+
+                items: [
+                    {
+                        xtype: 'toolbar',
+                        items: [
+                            {
+                                text: 'Edit',
+                                handler: function () {
+
+                                },
+                                menu: new Ext.menu.Menu(
+                                    {
+                                        items: [
+                                            {
+                                                text: 'Reset',
+                                                handler: function () {
+                                                    Ext.getCmp('replyTextArea').setValue("");
+                                                },
+                                            }
+                                        ]
+                                    }
+                                )
+                            },
+                            {
+                                text: 'Insert',
+                                handler: function () {
+
+                                },
+                                menu: new Ext.menu.Menu(
+                                    {
+                                        items: [
+                                            {
+                                                text: 'Table',
+                                                handler: createTable
+                                            }
+                                        ]
+                                    }
+                                )
+                            }
+                        ]
+                    },
+                    {
+                        id: 'replyTextArea',
+                        xtype: 'htmleditor',
+                        width: 600,
+                        height: 300,
+                        listeners: [
+                            {
+                                'focus': function () {
+                                    if(Ext.getCmp("replyTextArea").getValue()===""){
+                                        Ext.getCmp("apply").setDisabled(false)
+                                    }
+                                }
+                            }
+                        ]
+                    },
+
+                ],
+
+            })
+            var contextmenu = new Ext.menu.Menu(
+                {
+                    id: 'contextmenu',
+                    items: [
+                        {
+                            text: 'Reset',
+                            handler: function () {
+                                Ext.getCmp('replyTextArea').setValue("");
+                            },
+                        },
+                        {
+                            text: 'Table',
+                            handler: createTable,
+                        }
+                    ]
+                }
+            )
+            var windows = new Ext.Window({
+                title: 'reply',
+                items: [
+                    panel,
+                    {
+                        id: 'tableArea',
+                        xtype: '',
+                        width: 600,
+                        height: 300,
+                        tpl: new Ext.XTemplate([
+                                '<table border=1 id="tb">',
+                                '<tpl for="values">',
+                                '<tr style="height: 20px;">',
+                                '<tpl for="values">',
+                                '<td style="width: 40px;">&nbsp;</td>',
+                                '</tpl>',
+                                '</tr>',
+                                '</tpl>',
+                                '</table>'
+                            ]
+                        ),
+                        data: []
+                    },
+                    {
+                        id: 'apply',
+                        xtype: 'button',
+                        text: 'apply',
+                        listeners: {
+                            'click': function () {
+                                Ext.MessageBox.show({
+                                    title: 'wait',
+                                    msg: 'sending',
+                                    progressText: 'sending...',
+                                    width:100,
+                                    progress:true,
+                                    closable:false,
+                                    animEl: 'reply'
+                                });
+                                for(var i = 1; i < 6; i++){
+                                    setTimeout((function(v){
+                                        return function(){
+                                            if(v == 5){
+                                                Ext.MessageBox.hide();
+                                                Ext.MessageBox.alert('result','success')
+                                            }else{
+                                                var i = v/4;
+                                                Ext.MessageBox.updateProgress(i, Math.round(100*i)+'% completed');
+                                            }
+                                        };
+                                    })(i), i*250);
+                                }
+                            }
+                        }
+                    }
+                ],
+
+
+                hidden: false
+            })
+            Ext.get("h1").on('contextmenu', function (e) {
+                e.preventDefault();
+                contextmenu.showAt(e.getXY());
+            });
+            function createTable() {
+                if (!win) {
+                    win = new Ext.Window({
+                        applyTo: 'hello',
+                        title: '表格属性',
+                        layout: 'fit',
+                        width: 150,
+                        height: 120,
+                        closeAction: 'hide',
+                        plain: true,
+
+                        items: new Ext.Panel({
+                            applyTo: 'hello-tabs',
+
+                            items: [
+                                {
+                                    id: 'row',
+                                    xtype: 'textfield',
+                                    emptyText: '输入行'
+                                },
+                                {
+                                    id: 'column',
+                                    xtype: 'textfield',
+                                    emptyText: '输入列'
+                                }
+                            ]
+                        }),
+
+                        buttons: [{
+                            text: 'Submit',
+                            handler: function () {
+                                Ext.Msg.alert('提醒', '创建成功');
+                                //var array=Ext.getCmp('textarea').initialConfig.data;
+
+                                for (let i = 0; i < parseInt(Ext.getCmp('row').getValue()); i++) {
+                                    var arr = [];
+                                    for (let j = 0; j < parseInt(Ext.getCmp('column').getValue()); j++) {
+                                        arr.push({});
+                                    }
+                                    Ext.getCmp('tableArea').initialConfig.data.push(arr)
+                                    arr = [];
+                                }
+                                Ext.getCmp('tableArea').tpl.overwrite(Ext.getCmp('tableArea').body
+                                    , Ext.getCmp('tableArea').initialConfig.data)
+                                win.hide();
+                            }
+                        }]
+                    });
+                }
+                win.show(this);
+            }
+
+        });
+    </script>
+</head>
+<body id="h1">
+<div id="hello"></div>
+<div id="hello-tabs"></div>
+</body>
+</html>
